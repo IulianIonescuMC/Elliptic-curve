@@ -1,0 +1,20 @@
+html{
+	background-color: #d9ffcc;
+}
+div {
+	border-radius: 5px;
+	background-color: #e6ffff;
+	padding: 10px;
+	margin: 5px;
+	border-radius: 4px;
+	border: solid 1px;
+}
+div div{
+	background-color: white;
+}
+table{
+	background-color: white;
+	border-radius: 4px;
+	border: solid 1px;
+	margin:5px;
+}

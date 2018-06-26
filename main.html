@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Polinoame</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+ 	<meta charset ="UTF-8">
+ 	<link rel="stylesheet" href="main.css">
+ 	<script type="text/javascript">
+ 	
+ 		var Pfp;
+ 		var A=0;
+ 		var B=0;
+		function Fp(p){
+			this.getP = function(){ return Pfp}
+			this.setP = function(p){
+				if (p == 1 || p == 2){
+					Pfp = p;
+				}
+				else{
+					if(p % 2 == 0){
+						Pfp = 1;
+					}
+					else{
+						for (var i = 3; i <= p/2 ; i+=2){
+							if(p % i == 0){
+								Pfp = 1;
+							}
+						}
+					}
+				}
+				Pfp = p;
+			}
+		} // merge ok
+		
+		function Punct(n,x,y,inf){
+			this.Nume = n;
+			this.X=x;
+			this.Y=y;
+			this.Inf=inf;
+
+			this.getNume=function(){
+				return this.Nume;
+			}
+
+			// Returneaza coordonata X a punctului
+			this.getX=function(){
+				return this.X;
+			}
+
+			// Returneaza coordonata Y a punctului
+			this.getY=function(){
+				return this.Y;
+			}
+
+			// Returneaza daca punctul este punct de la infinit
+			this.getInf=function(){
+				return this.Inf;
+			}
+		}//posibil sa mearga bine
+		
+		function Curba(){
+			if ((4*A*A*A + 27*B*B) % F.getP() == 0 ){
+				alert("A -ul si B -ul nu desciu o curba valida !!!");
+			}
+			else{
+				A = A % F.getP();
+				B = B % F.getP();
+			}
+
+			this.getF = function(){ return F };
+			this.getA = function(){ return A };
+			this.getB = function(){ return B };
+			this.setFp = function(fp){ F = fp };
+			this.setA = function(a){ A = a % F.getP()};
+			this.setB = function(b){ B = b % F.getP()};
+			this.punctValid = function(Q){ 
+				var temp = ( Q.getX()*Q.getX()*Q.getX() + A * Q.getX() + B) % Pfp;
+			
+				if(Q.getInf() == true){
+					return true;
+				}
+			
+				if((Q.getY()*Q.getY()) % Pfp == temp){
+					return true;
+				}
+			
+				return false;
+			}
+
+		} //inca sub suspiciuni
+		
+		// Calculeaza a/b(mod p)
+		function ImpartireModP(a,b,p){
+			a = a % p;
+			b = b % p;
+			if(a < 0){
+				a = p + a;
+			}
+			if(b < 0){
+				b = p + b;
+			}
+			for(var i = 1; i < p; i++){
+				if( (b * i) % p == a){
+					return i;
+				}
+			}
+			return 0;
+		}
+
+		// Radical modulo p
+		function RadicalModular(a,p){
+			a = a % p;
+			if(a < 0){
+				a = p + a;
+			}
+			for(var i = 1; i < p; i++){
+				if( (i*i) % p == a ){
+					return i;
+				}
+			}
+			return -1;
+		}
+
+		// Cauta toate punctele unei curbe peste un Fp
+		function PuncteleCurbei(){   
+			var unde = document.getElementById("listaPucte");
+			var rand = unde.insertRow(0);
+			var nrRand = 0;
+			var RS = new Set(); // Vectorul de resturi patratice
+			RS.add(0); 
+			for(var i = 1; i < Pfp; i++){
+				var it; 
+				it = i;
+				it = it % Pfp;
+				for(var j = 2; j <= ( Pfp - 1 )/ 2; j++){
+					it = it * i;
+					it = it % Pfp;
+				}
+				if( it == 1 ){
+					RS.add(i);
+				}
+			}
+			
+			var it = 0;
+			var itt =0;
+			var n = 1;
+
+			// Cautam puncte posibile
+			for(var i = 0; i < Pfp; i++){
+				var yp = (i*i*i + A*i + B) % Pfp;
+				if(yp == 0){
+					var celula = rand.insertCell(it);
+					var txt = "P"+n+"("+i+","+0+");";
+					var nod = document.createTextNode(txt);
+					celula.appendChild(nod);
+					it = it + 1;
+					itt = itt + 1;
+					if ( it % 10 == 0){
+						nrRand++;
+						var rand = unde.insertRow(nrRand);
+						it=0;
+					}
+					n = n + 1;
+				}else{
+					if(RS.has(yp)){   // Cauta yp prvarre resturile patratice
+						var celula = rand.insertCell(it);
+						var txt = "P"+n+"("+i+","+RadicalModular(yp, Pfp)+");";
+						var nod = document.createTextNode(txt);
+						celula.appendChild(nod);
+						it = it + 1;
+						itt = itt + 1;
+						if ( it % 10 == 0){
+							nrRand++;
+							var rand = unde.insertRow(nrRand);
+							it=0;
+						}
+						n = n + 1;
+						var celula = rand.insertCell(it);
+						var txt = "P"+n+"("+i+","+(Pfp-RadicalModular(yp, Pfp))+");";
+						var nod = document.createTextNode(txt);
+						celula.appendChild(nod);
+						it = it + 1;
+						itt = itt + 1;
+						if ( it % 10 == 0){
+							nrRand++;
+							var rand = unde.insertRow(nrRand);
+							it=0;
+						}
+						n = n + 1;
+					}
+				}
+			}
+			var celula = rand.insertCell(it);
+			var txt = "P"+n+"(inf,inf);";
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+			var unde = document.getElementById("listaPuctee");
+			var rand = unde.insertRow(0);
+			var celula = rand.insertCell(0);
+			itt = itt + 1;
+			var txt ="Cardianlul curbei este:"+itt;
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+		}
+
+		// Aduna 2 puncte de pe o curba
+		function AdunarePuncte(P,Q){
+			// Verific daca vreunul e punct de la infinit
+			if(P.getInf() == true){
+				var R = new Punct('R',Q.getX(),Q.getY());
+				return R;
+			}
+			if(Q.getInf() == true){
+				var R = new Punct('R',P.getX(),P.getY());
+				return R;
+			}
+
+			// Verific daca punctele sunt valide
+			if(C.punctValid(P) == false || C.punctValid(Q) == false){
+				alert("Unul din punte nu verifica ecuatia curbei !!!");
+				return ;
+			}
+
+			var n = 'R';
+			var x, y;
+			
+			if( (P.getX() == Q.getX()) && (P.getY() == Q.getY()) ){
+				if( P.getY() == 0 ){
+					x = 0; y = 0;
+					var R = new Punct(n,x,y,true);
+					return R;
+				}else{
+					var m = ImpartireModP( (3*P.getX()*P.getX() + A), (2*P.getY()), Pfp);
+
+					x = (m*m - 2*P.getX()) % Pfp;
+					
+					y = ((-1)*P.getY() - m*(x - P.getX())) % Pfp;
+					
+					if(y < 0){
+						y = Pfp+ y;
+					}
+					if(x < 0){
+						x = Pfp + x;
+					}
+					
+					var R = new Punct(n,x,y,false);
+					return R;
+				}
+			}else{
+				if( P.getX() == Q.getX() ){
+					x = 0; y = 0;
+					var R = new Punct(n,x,y,true);
+					return R;
+				}else{
+					var m = ImpartireModP( (Q.getY() - P.getY()), (Q.getX() - P.getX()), Pfp);
+					
+					x = (m*m - (P.getX() + Q.getX())) % Pfp;
+					
+					y = ((-1)*P.getY() - m*(x - P.getX())) % Pfp;
+					
+					if(y < 0){
+						y = Pfp + y;
+					}
+					if(x < 0){
+						x =Pfp + x;
+					}
+					
+					var R = new Punct(n,x,y,false);
+					return R;
+				}
+			}
+		}
+
+		// Calculeaza cardinalul unei curbe peste un Fp
+		function Cardinal(){
+			var card = Pfp + 1;
+			var p = Pfp;
+			var sum = 0;
+
+			if( (p % 3 == 2 && A == 0) || (p % 4 == 3 && B == 0) ){
+				return card;
+			}
+
+			for(var i = 0; i < Pfp; i++){
+				var y = (i*i*i + i*A + B) % Pfp;
+				var temp = y;
+				temp = temp % Pfp;
+				for(var j = 2 ; j <= ( (Pfp - 1) / 2); j++){
+					temp = temp * y;
+					temp = temp % Pfp;
+				}
+				if(temp == Pfp-1){
+					temp = temp - Pfp;
+				}
+				sum = sum + temp;
+			}
+			
+			card = card + sum;
+			return card;
+		}
+
+		// Ordinul unui punct 
+		function Ordinul(P){
+			var ord = 1;
+			if(C.punctValid(P) == false){
+				return -1;
+			}
+			if(P.getInf() == true){
+				return ord;
+			}
+
+			var Q = new Punct("a",0,0,true);
+			Q = AdunarePuncte(P,P); 
+			ord = 2;
+
+			while(Q.getInf() != true){
+				Q = AdunarePuncte(Q,P);
+				ord = ord + 1;
+			}
+			return ord;
+		}
+
+		function PuterePunct(P,n){
+			var it;
+			if(n == 1){
+				return P;
+			}else{
+				var Q = new Punct("a",0,0,true);
+				Q = AdunarePuncte(P,P);
+				if(n == 2){
+					return Q;
+				}else{
+					it = 2;
+					while(it < n){
+						Q = AdunarePuncte(Q,P);
+						it = it + 1;
+					}
+					return Q;
+				}
+			}
+		}
+		
+		var P = new Punct("n",0,0,true);
+		var F = new Fp(1);
+ 		var C = new Curba();
+ 		var P4 = new Punct("a",0,0,false);
+ 		var P5 = new Punct("a",0,0,false);
+ 		var P61 = new Punct("P1",0,0,false);
+ 		var P62 = new Punct("P2",0,0,false);
+ 		var P8 = new Punct("a",0,0,false);
+ 		function f1(){ 
+ 			var temp = Number(document.getElementById("P-ul").value);
+ 			F.setP(temp);
+ 			var peCine = document.getElementById("Pfp-ul");
+ 			var txt = "Lucram peste : F"+temp;
+ 			peCine.innerHTML=txt;
+ 		};
+ 		function f2(){
+ 			A = Number(document.getElementById("A-ul").value);
+ 			B = Number(document.getElementById("B-ul").value);
+ 			if ( (4*A*A*A + 27*B*B) % F.getP() == 0  ){
+ 				alert("A -ul si B -ul nu desciu o curba valida !!!");
+ 			}
+ 			else{
+				A = A % F.getP();
+				B = B % F.getP();
+			}
+			var peCine = document.getElementById("Curba");
+			if ( A != 0 && B != 0){
+				var txt = "Folosind curba  :  E(F"+Pfp+"): y^2 = x^3 + "+A+"*x + "+B;
+			}
+			if ( A == 0 && B != 0 ){
+				var txt = "Folosind curba  :  E(F"+Pfp+"): y^2 = x^3 + "+B;
+			}
+			if ( A != 0 && B == 0){
+				var txt = "Folosind curba  :  E(F"+Pfp+"): y^2 = x^3 + "+A+"*x ";
+			}
+			if ( A == 0 && B == 0){
+				var txt = "Folosind curba  :  E(F"+Pfp+"): y^2 = x^3 + A*x +B";
+			}
+ 			
+ 			peCine.innerHTML=txt;
+ 		}
+
+ 		function f4(){
+ 			P.Nume = document.getElementById("M4.numePunct").value;
+ 			P.X = Number(document.getElementById("M4.X-ul").value);
+ 			P.Y = Number(document.getElementById("M4.Y-ul").value);
+ 			P.Inf = false;
+ 			var unde = document.getElementById("verificarePunct");
+			var rand = unde.insertRow(0);
+			var celula = rand.insertCell(0);
+			if ( C.punctValid(P) == true ){
+				var txt =P.Nume+"("+P.X+","+P.Y+")- Da";
+			}
+			else{
+				var txt =P.Nume+"("+P.X+","+P.Y+")- Nu";
+			}
+
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+ 		}
+
+		function f5(){ 
+			P5.Nume = document.getElementById("M5.numePunct").value;
+ 			P5.X = Number(document.getElementById("M5.X-ul").value);
+ 			P5.Y = Number(document.getElementById("M5.Y-ul").value);
+ 			P5.Inf = false;
+ 			var ordinulP5 = Ordinul(P5);
+ 			var unde = document.getElementById("afisareOrdin");
+			var rand = unde.insertRow(0);
+			var celula = rand.insertCell(0);
+			var txt ="Oridnul punctului "+P5.Nume+"("+P5.X+","+P5.Y+")="+ordinulP5;
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+ 		}
+
+		function f6(){
+			P61.Nume = document.getElementById("M61.numePunct").value;
+ 			P61.X = Number(document.getElementById("M61.X-ul").value);
+ 			P61.Y = Number(document.getElementById("M61.Y-ul").value);
+ 			P62.Nume = document.getElementById("M62.numePunct").value;
+ 			P62.X = Number(document.getElementById("M62.X-ul").value);
+ 			P62.Y = Number(document.getElementById("M62.Y-ul").value);
+ 			var RR = AdunarePuncte(P61,P62);
+ 			var unde = document.getElementById("afisareAdunare");
+			var rand = unde.insertRow(0);
+			var celula = rand.insertCell(0);
+			if ( RR.Inf == false ){
+				var txt =P61.Nume+"("+P61.X+","+P61.Y+")+"+P62.Nume+"("+P62.X+","+P62.Y+")="+RR.Nume+"("+RR.X+","+RR.Y+")";
+			}
+			else{
+				var txt =P61.Nume+"("+P61.X+","+P61.Y+")+"+P62.Nume+"("+P62.X+","+P62.Y+")="+RR.Nume+"(inf,inf)";
+			}
+
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+ 			
+ 		}
+ 		function f7(){
+ 			var unde = document.getElementById("afisareCardinal");
+			var rand = unde.insertRow(0);
+			var celula = rand.insertCell(0);
+			var txt = "Cardinalul curbei peste Fp -ul curent este "+Cardinal();
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+ 		}
+ 		function f8(){
+ 			P8.Nume = document.getElementById("M8.numePunct").value;
+ 			P8.X = Number(document.getElementById("M8.X-ul").value);
+ 			P8.Y = Number(document.getElementById("M8.Y-ul").value);
+ 			P8.Inf = false;
+ 			var nn = Number(document.getElementById("M8.n-ul").value);
+ 			var RRR = PuterePunct(P8,nn);
+
+ 			var unde = document.getElementById("afisareNp");
+			var rand = unde.insertRow(0);
+			var celula = rand.insertCell(0);
+			if ( RRR.Inf == false ){
+				var txt =nn+"*"+P8.Nume+"("+P8.X+","+P8.Y+")="+RRR.Nume+"("+RRR.X+","+RRR.Y+")";
+			}
+			else{
+				var txt =nn+"*"+P8.Nume+"("+P8.X+","+P8.Y+")="+RRR.Nume+"(inf,inf)";
+			}
+			var nod = document.createTextNode(txt);
+			celula.appendChild(nod);
+
+ 		}
+ 	</script>
+ 
+</head>
+<body>
+	<div id="Initial">
+		<p id="Pfp-ul">Lucram peste : F1</p>
+		<p id="Curba">Folosind curba  :  E(Fp): y^2 = x^3 + A*x + B</p>
+	</div>
+	<div id="Meniu">
+		<div id="M1"> 
+			<p>1) Setati P-ul corpului cu p elemente </p> 
+			<input type="text" name="P-ul" id="P-ul" placeholder="Dati P-ul dorit">
+			<button id="motor1" onclick="f1()">Set</button>
+		</div>
+		<div id="M2"> 
+			<p >2) Setati A-ul si B-ul pentru curba; </p>
+			<input type="number" name="A-ul" id="A-ul" placeholder="Dati A -ul ">
+			<input type="number" name="B-ul" id="B-ul" placeholder="Dati B -ul ">
+			<button id="motor2" onclick="f2()">Set</button>
+		</div>
+		<div id="M3"> 
+			<p >3) Listati toate punctele curbei peste Fp -ul curent </p>
+			<button id="motor3" onclick="PuncteleCurbei()">Listeaza</button>
+			<table id="listaPucte" ></table>
+			<table id="listaPuctee" ></table>
+		</div>
+		<div id="M4"> 
+			<p >4) Verificati daca un punct este pe curba </p>
+			<input type="text" name="numePunct" id="M4.numePunct" placeholder="Nume">
+			<input type="number" name="X-ul" id="M4.X-ul" placeholder="Dati X -ul ">
+			<input type="number" name="Y-ul" id="M4.Y-ul" placeholder="Dati Y -ul ">
+			<button id="motor4" onclick="f4()">Set</button>
+			<table id="verificarePunct" ></table>
+		</div>
+		<div id="M5"> 
+			<p >5) Calculati ordinul unui punct </p>
+			<input type="text" name="numePunct" id="M5.numePunct" placeholder="Nume">
+			<input type="number" name="X-ul" id="M5.X-ul" placeholder="Dati X -ul ">
+			<input type="number" name="Y-ul" id="M5.Y-ul" placeholder="Dati Y -ul ">
+			<button id="motor5" onclick="f5()">Set</button>
+			<table id="afisareOrdin"></table>
+		</div>
+		<div id="M6"> 
+			<p >6) Adunati doua puncte pe curba </p>
+			<input type="text" name="numePunct" id="M61.numePunct" placeholder="Nume">
+			<input type="number" name="X-ul" id="M61.X-ul" placeholder="Dati X -ul ">
+			<input type="number" name="Y-ul" id="M61.Y-ul" placeholder="Dati Y -ul "> 
+			<br>
+			<input type="text" name="numePunct" id="M62.numePunct" placeholder="Nume">
+			<input type="number" name="X-ul" id="M62.X-ul" placeholder="Dati X -ul ">
+			<input type="number" name="Y-ul" id="M62.Y-ul" placeholder="Dati Y -ul ">
+			<br>
+			<button id="motor6" onclick="f6()">Adunare</button>
+			<table id="afisareAdunare" ></table>
+		</div>
+		<div id="M7"> 
+			<p >7) Afisare cardinalul curbei peste Fp -ul curent </p>
+			<button id="motor7" onclick="f7()">Afisare</button>
+			<table id="afisareCardinal"></table>
+		</div>
+		<div id="M8"> 
+			<p >8) Calculati nP</p>
+			<input type="text" name="numePunct" id="M8.numePunct" placeholder="Nume">
+			<input type="number" name="X-ul" id="M8.X-ul" placeholder="Dati X -ul ">
+			<input type="number" name="Y-ul" id="M8.Y-ul" placeholder="Dati Y -ul ">
+			<input type="number" name="Y-ul" id="M8.n-ul" placeholder="Dati n -ul ">
+			<button id="motor8" onclick="f8()">Afisare</button>
+			<table id="afisareNp"></table>
+		</div>	
+	</div>
+</body>
+</html>
